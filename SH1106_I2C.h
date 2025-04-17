@@ -28,44 +28,36 @@
 *   (1) http://www.picbasic.co.uk/forum/archive/index.php/t-21213.html
 *   (2)	https://arduino.stackexchange.com/questions/13975/porting-sh1106-oled-driver-128-x-64-128-x-32-screen-is-garbled-but-partially
 *   (3) http://forum.arduino.cc/index.php?topic=265557.0
+* ------------
+* Modified by Paul Uriarte to work with the Raspberry Pi Pico (April 2025)
+* Datasheet: https://www.displayfuture.com/Display/datasheet/controller/SH1106.pdf
 ****************************************************************/
 
 #ifndef _SH1106_I2C_H_
 #define _SH1106_I2C_H_
 
 #include "FONT_INFO.h"
-#include "string.h"
-
-#ifdef ESP8266
-	#include "ets_sys.h"
-	#include "osapi.h"
-	#include "gpio.h"
-	#include "os_type.h"
-	#include "mem.h"
-
-	#define PUT_FUNCTION_IN_FLASH 				ICACHE_FLASH_ATTR
-	#define _sh1106_i2c_backend_init			ESP8266_I2C_Init
-	#define	 _sh1106_i2c_send_start_function	ESP8266_I2C_SendStart
-	#define _sh1106_i2c_send_stop_function		ESP8266_I2C_SendStop
-	#define _sh1106_i2c_send_byte_function		ESP8266_I2C_SendByte
-	#define debug_printf 						os_printf
-#else
-	#define PUT_FUNCTION_IN_FLASH
-#endif
+#include "FONT_courier_new_18pt.h"
+#include "FONT_menlo_10pt.h"
 
 //I2C ADDRESS
 #define SH1106_I2C_ADDRESS_1						0x3C
 #define SH1106_I2C_ADDRESS_2						0x3D
 
 //SCREEN PIXEL SIZE
+#define SH1106_I2C_OLED_WIDTH						128u
+#define SH1106_I2C_OLED_HEIGHT						64u
 #define SH1106_I2C_OLED_MAX_COLUMN					127u
 #define SH1106_I2C_OLED_MAX_PAGE					7u
+#define SH1106_I2C_OLED_MAX_ROW                     63u
+#define SH1106_I2C_OLED_NUM_PAGES                   8u
+#define SH1106_FRAMEBUFFER_SIZE                     ((SH1106_I2C_OLED_MAX_COLUMN + 1) * (SH1106_I2C_OLED_MAX_PAGE + 1))
 
 //CONTROL BYTES
-#define SH1106_I2C_CONTROL_BYTE_CMD_SINGLE			0x80
-#define SH1106_I2C_CONTROL_BYTE_CMD_STREAM			0x00
-#define SH1106_I2C_CONTROL_BYTE_DATA_SINGLE			0xC0
-#define SH1106_I2C_CONTROL_BYTE_DATA_STREAM			0x40
+#define SH1106_I2C_CONTROL_BYTE_CMD_SINGLE			0x80 // C0, D/C = 10
+#define SH1106_I2C_CONTROL_BYTE_CMD_STREAM			0x00 // C0, D/C = 00
+#define SH1106_I2C_CONTROL_BYTE_DATA_SINGLE			0xC0 // C0, D/C = 11
+#define SH1106_I2C_CONTROL_BYTE_DATA_STREAM			0x40 // C0, D/C = 01
 
 //FUNDAMENTAL COMMANDS (DATASHEET PG 29)
 #define SH1106_I2C_CMD_SET_COLUMN_LOWER_4			0x00
@@ -96,31 +88,33 @@
 #define SH1106_I2C_SCREEN_FILL_PATTERN_CLEAR		0x00
 #define SH1106_I2C_SCREEN_FILL_PATTERN_FILL			0xFF
 
+#define SH1106_I2C_CLK                              400
+
 //FUNCTION PROTOTYPES/////////////////////////////////////
 //CONFIGURATION FUNCTIONS
-void PUT_FUNCTION_IN_FLASH SH1106_I2C_SetDebug(uint8_t debug_on);
-void PUT_FUNCTION_IN_FLASH SH1106_I2C_SetDeviceAddress(uint8_t address);
-void PUT_FUNCTION_IN_FLASH SH1106_I2C_Init(void);
+void SH1106_I2C_SetDebug(uint8_t debug_on);
+void SH1106_I2C_Init(void);
 
 //CONTROL FUNCTIONS
-void PUT_FUNCTION_IN_FLASH SH1106_I2C_SetDisplayOnOff(uint8_t on);
-void PUT_FUNCTION_IN_FLASH SH1106_I2C_SetDisplayContrast(uint8_t contrast_val);
-void PUT_FUNCTION_IN_FLASH SH1106_I2C_SetDisplayNormal(void);
-void PUT_FUNCTION_IN_FLASH SH1106_I2C_SetDisplayInverted(void);
-void PUT_FUNCTION_IN_FLASH SH1106_I2C_ResetAndClearScreen(const uint8_t* fill_pattern, uint8_t len);
-void PUT_FUNCTION_IN_FLASH SH1106_I2C_UpdateDisplay(void);
+void SH1106_I2C_SetDisplayOnOff(uint8_t on);
+void SH1106_I2C_SetDisplayContrast(uint8_t contrast_val);
+void SH1106_I2C_SetDisplayNormal(void);
+void SH1106_I2C_SetDisplayInverted(void);
+void SH1106_I2C_ClearScreen(void);
+void SH1106_I2C_ResetAndClearScreen(const uint8_t* fill_pattern, uint8_t len);
+void SH1106_I2C_UpdateDisplay(void);
 
 //DRAWING FUNCTIONS
-void PUT_FUNCTION_IN_FLASH SH1106_I2C_DrawPixel(uint8_t x, uint8_t y, uint8_t color);
-void PUT_FUNCTION_IN_FLASH SH1106_I2C_DrawLineVertical(uint8_t x, uint8_t y_start, uint8_t y_end, uint8_t color);
-void PUT_FUNCTION_IN_FLASH SH1106_I2C_DrawLineHorizontal(uint8_t x_start, uint8_t x_end, uint8_t y, uint8_t color);
-void PUT_FUNCTION_IN_FLASH SH1106_I2C_DrawBoxEmpty(uint8_t x_start, uint8_t y_start, uint8_t x_end, uint8_t y_end, uint8_t color);
-void PUT_FUNCTION_IN_FLASH SH1106_I2C_DrawBoxFilled(uint8_t x_start, uint8_t y_start, uint8_t x_end, uint8_t y_end, uint8_t color);
-void PUT_FUNCTION_IN_FLASH SH1106_I2C_DrawCircleEmpty(int8_t x, int8_t y, int8_t radius, uint8_t color);
-void PUT_FUNCTION_IN_FLASH SH1106_I2C_DrawCircleFilled(int8_t x, int8_t y, int8_t radius, uint8_t color);
+void SH1106_I2C_DrawPixel(uint8_t x, uint8_t y, uint8_t color);
+void SH1106_I2C_DrawLineVertical(uint8_t x, uint8_t y_start, uint8_t y_end, uint8_t color);
+void SH1106_I2C_DrawLineHorizontal(uint8_t x_start, uint8_t x_end, uint8_t y, uint8_t color);
+void SH1106_I2C_DrawBoxEmpty(uint8_t x_start, uint8_t y_start, uint8_t x_end, uint8_t y_end, uint8_t color);
+void SH1106_I2C_DrawBoxFilled(uint8_t x_start, uint8_t y_start, uint8_t x_end, uint8_t y_end, uint8_t color);
+void SH1106_I2C_DrawCircleEmpty(int8_t x, int8_t y, int8_t radius, uint8_t color);
+void SH1106_I2C_DrawCircleFilled(int8_t x, int8_t y, int8_t radius, uint8_t color);
 
 //COMPLEX DRAWING FUNCTIONS
-void PUT_FUNCTION_IN_FLASH SH1106_I2C_DrawString(char* str, uint8_t x, uint8_t y, const FONT_INFO font, uint8_t color);
-void PUT_FUNCTION_IN_FLASH SH1106_I2C_DrawBitmap(uint8_t* bitmap, uint8_t x, uint8_t y, uint8_t x_len_bits, uint8_t y_len_bits, uint8_t color);
+void SH1106_I2C_DrawString(char* str, uint8_t x, uint8_t y, const FONT_INFO font, uint8_t color);
+void SH1106_I2C_DrawBitmap(uint8_t* bitmap, uint8_t x, uint8_t y, uint8_t x_len_bits, uint8_t y_len_bits, uint8_t color);
 //END FUNCTION PROTOTYPES/////////////////////////////////
 #endif
