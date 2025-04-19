@@ -404,17 +404,10 @@ void SH1106_I2C_UpdateDisplay(void)
 
 		//SET PAGE
 		_sh1106_i2c_send_command(SH1106_I2C_CMD_SET_PAGE_ADDRESS | y);
-		// _sh1106_i2c_send_stop_function();
 
 		//SEND PAGE DATA
 		uint16_t page_start = (y * (SH1106_I2C_OLED_MAX_COLUMN + 1));
 		_sh1106_i2c_send_data_stream(&_sh1106_framebuffer[page_start], SH1106_I2C_OLED_MAX_COLUMN + 1);
-		// for(x = 0; x < (SH1106_I2C_OLED_MAX_COLUMN + 1); x++)
-		// {
-		// 	_sh1106_i2c_send_data(_sh1106_framebuffer[counter]);
-		// 	counter++;
-		// }
-		// _sh1106_i2c_send_stop_function();
 	}
 
 	if(_sh1106_i2c_debug)

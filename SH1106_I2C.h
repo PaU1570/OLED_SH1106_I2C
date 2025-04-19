@@ -37,8 +37,7 @@
 #define _SH1106_I2C_H_
 
 #include "FONT_INFO.h"
-#include "FONT_courier_new_18pt.h"
-#include "FONT_menlo_10pt.h"
+#include "FONT_spleen_8x16.h"
 
 //I2C ADDRESS
 #define SH1106_I2C_ADDRESS_1						0x3C
@@ -51,6 +50,7 @@
 #define SH1106_I2C_OLED_MAX_PAGE					7u
 #define SH1106_I2C_OLED_MAX_ROW                     63u
 #define SH1106_I2C_OLED_NUM_PAGES                   8u
+#define SH1106_I2C_OLED_PAGE_HEIGHT                 8u
 #define SH1106_FRAMEBUFFER_SIZE                     ((SH1106_I2C_OLED_MAX_COLUMN + 1) * (SH1106_I2C_OLED_MAX_PAGE + 1))
 
 //CONTROL BYTES
