@@ -37,7 +37,6 @@
 #define _SH1106_I2C_H_
 
 #include "FONT_INFO.h"
-#include "FONT_spleen_8x16.h"
 
 //I2C ADDRESS
 #define SH1106_I2C_ADDRESS_1						0x3C

@@ -582,8 +582,10 @@ void SH1106_I2C_DrawString(char* str, uint8_t x, uint8_t y, const FONT_INFO font
 	for(counter_char = 0; counter_char < length; counter_char++)
 	{
 		y_offset = y;
-		printf("current char = %c", str[counter_char]);
-		printf(" pos = %u,%u\n", x_offset, y_offset);
+		if (_sh1106_i2c_debug) {
+			printf("current char = %c", str[counter_char]);
+			printf(" pos = %u,%u\n", x_offset, y_offset);
+		}
 
 		current_char = str[counter_char];
 
